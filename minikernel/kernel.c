@@ -304,6 +304,22 @@ int sis_id_proceso(){
 	return id;
 }
 
+//Llamada que bloquea un proceso un plazo de tiempo, se pasa por parámetro el tiempo en milisegundos.				//NUEVO
+int dormir(unsigned int segundos){
+	//leer_registro es una rutina que permite leer y escribir en lso registros de propósito general del procesador
+	segundos = (unsigned int)leer_registro(1);		
+	/*Esta función fija el nivel de interrupcion del procesador devolviendo el rpevio. 
+	Entonces permite que haya interrupciones de niveles superiores y no de inferiores. Se puede volver al estado
+	original usando esta función*/
+	int nivel = fijar_nivel_int(NIVEL 3);
+	printk("Id del proceso: %d. Se va a bloquear: %d segundos\n", p_proc_actual->id, segundos);
+	p_proc_actual->estado=BLOQUEADO;
+	
+	
+}
+
+
+
 /*
  * Tratamiento de llamada al sistema crear_proceso. Llama a la
  * funcion auxiliar crear_tarea sis_terminar_proceso
