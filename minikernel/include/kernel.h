@@ -35,7 +35,7 @@ typedef struct BCP_t {
         int estado;			/* TERMINADO|LISTO|EJECUCION|BLOQUEADO*/
         contexto_t contexto_regs;	/* copia de regs. de UCP */
         void * pila;			/* dir. inicial de la pila */
-		int sleep_t 	//Tiempo que debe permanecer dormido el proceso del ejercicio 1.   							VARIABLE NUEVA.
+		int tiempo_dormido; //Tiempo que debe permanecer dormido el proceso del ejercicio 1.   							VARIABLE NUEVA.
 	BCPptr siguiente;		/* puntero a otro BCP */
 	void *info_mem;			/* descriptor del mapa de memoria */
 } BCP;

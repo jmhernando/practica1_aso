@@ -324,7 +324,7 @@ int dormir(unsigned int segundos){
 	/*Pone al proceso actual en estado bloqueado.*/
 	p_proc_actual->estado=BLOQUEADO;
 	/*Pone a dormir el proceso actual tantos segundos.*/
-	p_proc_actual->t_dormir=segundos*TICK;
+	p_proc_actual->tiempo_dormido=segundos*TICK;
 	//Puntero que apunta al BCP, se llamará proceso dormido y con valor el proceso actual.
 	BCP* p_proc_dormido = p_proc_actual;
 	
@@ -354,7 +354,7 @@ int dormir(unsigned int segundos){
 	*/
 	cambio_contexto(&(p_proc_dormido->contexto_regs),&(p_proc_actual->contexto_regs));
 	/*Volver al nivel de interrupción anterior.*/
-	fijar_nivel_int(nivel_int);
+	fijar_nivel_int(nivel);
 	return 0;
 }
 
