@@ -308,6 +308,7 @@ int sis_id_proceso(){
 	return id;
 }
 
+//Archivos a cambiar para una llamada a sistema: KERNEL.C, KERNEL.H, LLAMSIS.H. SERV.C, SERVICIOS.H
 //Llamada que bloquea un proceso un plazo de tiempo, se pasa por parámetro el tiempo en milisegundos.				//NUEVO
 int dormir(unsigned int segundos){
 	//leer_registro es una rutina que permite leer y escribir en lso registros de propósito general del procesador
@@ -317,9 +318,44 @@ int dormir(unsigned int segundos){
 	original usando esta función*/
 	int nivel = fijar_nivel_int(NIVEL 3);
 	printk("Id del proceso: %d. Se va a bloquear: %d segundos\n", p_proc_actual->id, segundos);
+	
+	//PONEMOS EL PROCESO EN ESTADO BLOQUEADO DURANTE X SEGUNDOS.
+	
+	/*Pone al proceso actual en estado bloqueado.*/
 	p_proc_actual->estado=BLOQUEADO;
+	/*Pone a dormir el proceso actual tantos segundos.*/
+	p_proc_actual->t_dormir=segundos*TICK;
+	//Puntero que apunta al BCP, se llamará proceso dormido y con valor el proceso actual.
+	BCP* p_proc_dormido = p_proc_actual;
 	
 	
+	
+	//ELIMINAR PROCESO DE LA LISTA DE LISTOS E INTRODUCIRLO EN LA LISTA DE BLOQUEADOS.
+	
+	/*Al estar bloqueado ya no está listo, por lo tanto se le expulsa de dicha lista, lo guarda en la de bloqueados.*/
+	/*El BCP dispone del puntero siguiente, que permite que se crean listas, en nuestro caso solo tenemos la lista de listos
+	que agrupa los procesos listos para ejecutar. (El que se ejecuta actualmente también está en esta lista.)*/
+	eliminar_primero(&lista_listos);
+	/*Se pone en la lista de dormidos el proceso actual que se ha pasado a estado bloqueado.*/
+	insertar_ultimo(&lista_dormidos, p_proc_dormido);
+	//Tanto eliminar_primero e insertar_ultimo son funciones de esta misma clase.
+	
+	
+	//COGER UN NUEVO PROCESO Y HACER CAMBIO DE CONTEXTO.
+	
+	/*Función ya perteneciente a esta clase. Mientras que haya un proceso listo, lo devuelve. (Siempre devuelve el primero de la lista)*/
+	p_proc_actual= planificador();
+	/*Al hacer un cambio de proceso en ejecución se debe hacer un cambio de contexto:*/
+	printk("Se hace un cambio de contexto del proceso: %d al proceso: %d\n", p_proc_dormido->id,p_proc_actual->id);
+	/*cambio_contexto(contexto_t*contexto_a_salvar,contexto_t*contexto_a_restaurar)
+		esta función consiste en copiar el estado actual de los registros del procesador en el primer parámetro.
+		El siguiente parámetro hace la función inversa.
+		
+	*/
+	cambio_contexto(&(p_proc_dormido->contexto_regs),&(p_proc_actual->contexto_regs));
+	/*Volver al nivel de interrupción anterior.*/
+	fijar_nivel_int(nivel_int);
+	return 0;
 }
 
 

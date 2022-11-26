@@ -46,4 +46,7 @@ int escribir(char *texto, unsigned int longi){
 int id(){																													//NUEVO
 	return llamsis(ID_PROCESO,3);
 }
+int dormir(unsigned int segundos){
+	return llamsis(DORMIR, 4, (long) segundos);
+}
 

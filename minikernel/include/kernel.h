@@ -93,15 +93,16 @@ int sis_terminar_proceso();
 int sis_escribir();	
 	
 /*Al crear en kernel.c una nueva rutina, esta se debe declarar en este archivo.*/
-int sis_id_proceso();																											//NUEVO
-
+int sis_id_proceso();																				//NUEVO
+int dormir(unsigned int segundos);																	//NUEVO
 /*
  * Variable global que contiene las rutinas que realizan cada llamada
  */
 servicio tabla_servicios[NSERVICIOS]={	{sis_crear_proceso},
 					{sis_terminar_proceso},
 					{sis_escribir},
-					{sis_id_proceso} 	//rutina que ofrece el id.														//NUEVO
+					{sis_id_proceso}, 	//rutina que ofrece el id.									//NUEVO EJERCICIO 1
+					{dormir}																	  //NUEVO EJERCICIO 1
 					};
 
 #endif /* _KERNEL_H */

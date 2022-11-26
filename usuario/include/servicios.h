@@ -29,8 +29,8 @@ int escribirf(const char *formato, ...);
 int crear_proceso(char *prog);
 int terminar_proceso();
 int escribir(char *texto, unsigned int longi);
-int id();																													//NUEVO
-
+int id();					//NUEVO
+int dormir(unsigned int segundos);
 
 #endif /* SERVICIOS_H */
 
