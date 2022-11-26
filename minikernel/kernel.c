@@ -4,9 +4,13 @@
  *  Minikernel. Versión 1.0
  *
  *  Fernando Pérez Costoya
- *
+ *	
  */
-
+/*Trabajo realizado por:
+	Iván Maqueda Guede
+	Laura Sánchez Muñoz 
+	Jose Manuel hernando Sánchez
+*/
 /*
  *
  * Fichero que contiene la funcionalidad del sistema operativo
