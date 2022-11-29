@@ -220,7 +220,35 @@ static void int_terminal(){
 static void int_reloj(){
 
 	printk("-> TRATANDO INT. DE RELOJ\n");
+																			//NUEVO
+		BCP* proceso = lista_dormir.primero;
+		
+	while (proceso != NULL) {
+		//Disminuir su tiempo
+		proceso->tiempo_dormido--;
+		printk("Al proceso con id = %d le queda %d\n", proceso-> id, proceso->tiempo_dormido);
+		//Si el plazo ha acabado, desbloquear
+		//Antes de borrarlo hay que guardar el siguiente proceso al que apunta en la cola dormidos
+		//Si se borra despues, apunta a otro que no esta dormido!!
+		BCP* proceso_siguiente = proceso->siguiente;
+		if(proceso->tiempo_dormido <= 0) {
+			//Elevar nivel interrupcion y guardar actual (desconocido)
+			int nivel_int = fijar_nivel_int(NIVEL_3); //Inhibir int reloj mientras se manejan listas
+			
+			printk("El proceso con id = %d despierta\n", proceso->id);
+			//Cambiar el estado
+			proceso->estado = LISTO;
+			//Quitarlo de la lista dormidos
+			eliminar_elem(&lista_dormir, proceso);
+			//Ponerlo el ultimo en la cola de listos
+			insertar_ultimo(&lista_dormir, proceso);
 
+			//Volver al nivel de interrupcion anterior
+			fijar_nivel_int(nivel_int);		
+		}
+		//Pasar al siguiente elemento en la cola de dormidos
+		proceso = proceso_siguiente;
+	}
         return;
 }
 
@@ -302,7 +330,10 @@ static int crear_tarea(char *prog){
 
 /*Llamada para obtener el id del proceso que la invoca*/															//AÑADIDA
 
-int sis_id_proceso(){
+
+
+
+int obtener_id_pr(){
 	int id = p_proc_actual->id;
 	printk("Id del proceso actual", id);
 	return id;
@@ -316,7 +347,7 @@ int dormir(unsigned int segundos){
 	/*Esta función fija el nivel de interrupcion del procesador devolviendo el rpevio. 
 	Entonces permite que haya interrupciones de niveles superiores y no de inferiores. Se puede volver al estado
 	original usando esta función*/
-	int nivel = fijar_nivel_int(NIVEL 3);
+	int nivel = fijar_nivel_int(NIVEL_3);
 	printk("Id del proceso: %d. Se va a bloquear: %d segundos\n", p_proc_actual->id, segundos);
 	
 	//PONEMOS EL PROCESO EN ESTADO BLOQUEADO DURANTE X SEGUNDOS.
@@ -337,7 +368,7 @@ int dormir(unsigned int segundos){
 	que agrupa los procesos listos para ejecutar. (El que se ejecuta actualmente también está en esta lista.)*/
 	eliminar_primero(&lista_listos);
 	/*Se pone en la lista de dormidos el proceso actual que se ha pasado a estado bloqueado.*/
-	insertar_ultimo(&lista_dormidos, p_proc_dormido);
+	insertar_ultimo(&lista_dormir, p_proc_dormido);
 	//Tanto eliminar_primero e insertar_ultimo son funciones de esta misma clase.
 	
 	

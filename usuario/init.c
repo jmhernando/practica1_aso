@@ -26,7 +26,7 @@
 int main(){
 
 	printf("init: comienza\n");
-
+	printf("Hola");
 /* EJEMPLO DE PRUEBA INICIAL QUE YA FUNCIONA PUESTO QUE CORRESPONDE CON LA
 FUNCIONALIDAD YA IMPLEMENTADA EN EL MATERIAL DE APOYO. UNA VEZ QUE IMPLEMENTE
 ALGO COMENTE ESTA PARTE Y DESCOMENTE LA PRUEBA CORRESPONDIENTE */
@@ -50,12 +50,15 @@ ALGO COMENTE ESTA PARTE Y DESCOMENTE LA PRUEBA CORRESPONDIENTE */
 /* FIN PRUEBA INICIAL */
 
  //PRUEBA DE LA LLAMADA OBTENER_ID_PR
-{
+	{
+		printf("holaaaa");
         int i;
         for (i=1; i<=2; i++)
                 if (crear_proceso("yosoy")<0)
                         printf("Error creando yosoy\n");
-}
+	}
+		
+
 
 
 //PRUEBA DE LA LLAMADA DORMIR

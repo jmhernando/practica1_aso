@@ -36,8 +36,8 @@ typedef struct BCP_t {
         contexto_t contexto_regs;	/* copia de regs. de UCP */
         void * pila;			/* dir. inicial de la pila */
 		int tiempo_dormido; //Tiempo que debe permanecer dormido el proceso del ejercicio 1.   							VARIABLE NUEVA.
-	BCPptr siguiente;		/* puntero a otro BCP */
-	void *info_mem;			/* descriptor del mapa de memoria */
+		BCPptr siguiente;		/* puntero a otro BCP */
+		void *info_mem;			/* descriptor del mapa de memoria */
 } BCP;
 
 /*
@@ -93,7 +93,7 @@ int sis_terminar_proceso();
 int sis_escribir();	
 	
 /*Al crear en kernel.c una nueva rutina, esta se debe declarar en este archivo.*/
-int sis_id_proceso();																				//NUEVO
+int obtener_id_pr();																				//NUEVO
 int dormir(unsigned int segundos);																	//NUEVO
 /*
  * Variable global que contiene las rutinas que realizan cada llamada
@@ -101,7 +101,7 @@ int dormir(unsigned int segundos);																	//NUEVO
 servicio tabla_servicios[NSERVICIOS]={	{sis_crear_proceso},
 					{sis_terminar_proceso},
 					{sis_escribir},
-					{sis_id_proceso}, 	//rutina que ofrece el id.									//NUEVO EJERCICIO 1
+					{obtener_id_pr}, 	//rutina que ofrece el id.									//NUEVO EJERCICIO 1
 					{dormir}																	  //NUEVO EJERCICIO 1
 					};
 

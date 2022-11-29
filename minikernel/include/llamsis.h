@@ -19,7 +19,7 @@
 #define _LLAMSIS_H
 
 /* Numero de llamadas disponibles */
-#define NSERVICIOS 4																			//NUEVO incrementar el 4 a 5 si se introduce nueva rutina
+#define NSERVICIOS 5																			//NUEVO incrementar el 4 a 5 si se introduce nueva rutina
 
 #define CREAR_PROCESO 0
 #define TERMINAR_PROCESO 1
