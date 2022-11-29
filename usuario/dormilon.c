@@ -25,7 +25,9 @@ int main(){
 
 	/* despues duerme numero de segundos dependiendo de su pid */
 	segs=id+1;
+	
 	printf("dormilon (%d) duerme %d segundos\n", id, segs);
+	
 	dormir(segs);
 
 	printf("dormilon (%d): termina\n", id);

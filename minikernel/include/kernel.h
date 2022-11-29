@@ -71,8 +71,6 @@ BCP tabla_procs[MAX_PROC];
  */
 lista_BCPs lista_listos= {NULL, NULL};
 
-
-
 lista_BCPs lista_dormir ={NULL,NULL};																					//VARIABLE NUEVA
 /*
  *

@@ -233,7 +233,7 @@ static void int_reloj(){
 		BCP* proceso_siguiente = proceso->siguiente;
 		if(proceso->tiempo_dormido <= 0) {
 			//Elevar nivel interrupcion y guardar actual (desconocido)
-			int nivel_int = fijar_nivel_int(NIVEL_3); //Inhibir int reloj mientras se manejan listas
+			int nivel = fijar_nivel_int(NIVEL_3); //Inhibir int reloj mientras se manejan listas
 			
 			printk("El proceso con id = %d despierta\n", proceso->id);
 			//Cambiar el estado
@@ -241,10 +241,10 @@ static void int_reloj(){
 			//Quitarlo de la lista dormidos
 			eliminar_elem(&lista_dormir, proceso);
 			//Ponerlo el ultimo en la cola de listos
-			insertar_ultimo(&lista_dormir, proceso);
+			insertar_ultimo(&lista_listos, proceso);
 
 			//Volver al nivel de interrupcion anterior
-			fijar_nivel_int(nivel_int);		
+			fijar_nivel_int(nivel);		
 		}
 		//Pasar al siguiente elemento en la cola de dormidos
 		proceso = proceso_siguiente;
@@ -335,12 +335,13 @@ static int crear_tarea(char *prog){
 
 int obtener_id_pr(){
 	int id = p_proc_actual->id;
-	printk("Id del proceso actual", id);
+	printk("Id del proceso actual\n", id);
 	return id;
 }
 
 //Archivos a cambiar para una llamada a sistema: KERNEL.C, KERNEL.H, LLAMSIS.H. SERV.C, SERVICIOS.H
 //Llamada que bloquea un proceso un plazo de tiempo, se pasa por parámetro el tiempo en milisegundos.				//NUEVO
+
 int dormir(unsigned int segundos){
 	//leer_registro es una rutina que permite leer y escribir en lso registros de propósito general del procesador
 	segundos = (unsigned int)leer_registro(1);		
@@ -352,13 +353,13 @@ int dormir(unsigned int segundos){
 	
 	//PONEMOS EL PROCESO EN ESTADO BLOQUEADO DURANTE X SEGUNDOS.
 	
-	/*Pone al proceso actual en estado bloqueado.*/
-	p_proc_actual->estado=BLOQUEADO;
+	
 	/*Pone a dormir el proceso actual tantos segundos.*/
 	p_proc_actual->tiempo_dormido=segundos*TICK;
+	/*Pone al proceso actual en estado bloqueado.*/
+	p_proc_actual->estado=BLOQUEADO;
 	//Puntero que apunta al BCP, se llamará proceso dormido y con valor el proceso actual.
 	BCP* p_proc_dormido = p_proc_actual;
-	
 	
 	
 	//ELIMINAR PROCESO DE LA LISTA DE LISTOS E INTRODUCIRLO EN LA LISTA DE BLOQUEADOS.
@@ -377,7 +378,7 @@ int dormir(unsigned int segundos){
 	/*Función ya perteneciente a esta clase. Mientras que haya un proceso listo, lo devuelve. (Siempre devuelve el primero de la lista)*/
 	p_proc_actual= planificador();
 	/*Al hacer un cambio de proceso en ejecución se debe hacer un cambio de contexto:*/
-	printk("Se hace un cambio de contexto del proceso: %d al proceso: %d\n", p_proc_dormido->id,p_proc_actual->id);
+	printk("Se hace un cambio de contexto del proceso: %d al proceso: %d \n", p_proc_dormido->id,p_proc_actual->id);
 	/*cambio_contexto(contexto_t*contexto_a_salvar,contexto_t*contexto_a_restaurar)
 		esta función consiste en copiar el estado actual de los registros del procesador en el primer parámetro.
 		El siguiente parámetro hace la función inversa.

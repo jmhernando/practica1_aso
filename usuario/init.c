@@ -50,20 +50,25 @@ ALGO COMENTE ESTA PARTE Y DESCOMENTE LA PRUEBA CORRESPONDIENTE */
 /* FIN PRUEBA INICIAL */
 
  //PRUEBA DE LA LLAMADA OBTENER_ID_PR
+	/*
 	{
-		printf("holaaaa");
         int i;
-        for (i=1; i<=2; i++)
-                if (crear_proceso("yosoy")<0)
-                        printf("Error creando yosoy\n");
-	}
+        for (i=1; i<=2; i++){
+			if (crear_proceso("yosoy")<0)
+            	printf("Error creando yosoy\n");
+		}
+           
 		
-
+		
+	}
+	*/
+		
+if (crear_proceso("prueba_dormir")<0)
+		printf("Error creando prueba_dormir\n");
 
 
 //PRUEBA DE LA LLAMADA DORMIR
-	if (crear_proceso("prueba_dormir")<0)
-		printf("Error creando prueba_dormir\n");
+	
 
 
 /* PRIMERA PRUEBA DE MUTEX
