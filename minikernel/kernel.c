@@ -220,7 +220,7 @@ static void int_terminal(){
 static void int_reloj(){
 
 	printk("-> TRATANDO INT. DE RELOJ\n");
-																			//NUEVO
+																												//NUEVO
 		BCP* proceso = lista_dormir.primero;
 		
 	while (proceso != NULL) {
@@ -332,7 +332,7 @@ static int crear_tarea(char *prog){
 
 
 
-
+//Este método debe llamarse así porque en la clase de prueba yosoy.c llama a esta función.
 int obtener_id_pr(){
 	int id = p_proc_actual->id;
 	printk("Id del proceso actual\n", id);
@@ -340,6 +340,8 @@ int obtener_id_pr(){
 }
 
 //Archivos a cambiar para una llamada a sistema: KERNEL.C, KERNEL.H, LLAMSIS.H. SERV.C, SERVICIOS.H
+//Para hacer la prueba de este método hay que descomentar en init.c
+
 //Llamada que bloquea un proceso un plazo de tiempo, se pasa por parámetro el tiempo en milisegundos.				//NUEVO
 
 int dormir(unsigned int segundos){
