@@ -11,7 +11,7 @@
 	Laura Sánchez Muñoz 
 	Jose Manuel hernando Sánchez
 	
-// prueba
+// esto es una prueba
 */
 /*
  *
