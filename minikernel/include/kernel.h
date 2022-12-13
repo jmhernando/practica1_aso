@@ -36,6 +36,7 @@ typedef struct BCP_t {
         contexto_t contexto_regs;	/* copia de regs. de UCP */
         void * pila;			/* dir. inicial de la pila */
 		int tiempo_dormido; //Tiempo que debe permanecer dormido el proceso del ejercicio 1.   							VARIABLE NUEVA.
+		int descriptores[NUM_MUT_PROC];	//Array de descriptores
 		BCPptr siguiente;		/* puntero a otro BCP */
 		void *info_mem;			/* descriptor del mapa de memoria */
 } BCP;
@@ -54,6 +55,10 @@ typedef struct{
 } lista_BCPs;
 
 
+
+																	//Nuevo array de mutex
+mutex array_mutex[NUM_MUT];
+int num_mutex_creados 													//NUEVA VARIABLE usada en crear_mutex
 /*
  * Variable global que identifica el proceso actual
  */

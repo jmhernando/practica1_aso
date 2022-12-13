@@ -21,6 +21,7 @@
  */
 
 #include "kernel.h"	/* Contiene defs. usadas por este modulo */
+#include <string.h>	//Para usar cadenas de caracteres
 //Esto es un cambio
 /*
  *
@@ -395,13 +396,137 @@ int dormir(unsigned int segundos){
 	return 0;
 }
 
+/*EMPEZAMOS EJERCICIO MUTEX*/
+int caracter_max(char *nombre_Mut){
+	
+	//strlen cuenta los caracteres pasados como parametro
+	int nCaracteres = strlen(nombre_Mut);
+	if(nCaracteres>MAX_NOM_MUT){
+		printk("Nombre Mut: %s\n",nombre_Mut);
+		printk("Pero el nombre es demasiado largo.\n");
+		return -1;
+	}
+	else{
+		printk("Nombre Mut: %s\n",nombre_Mut);
+		printk("El nombre tiene la longitud correcta.\n");
+		return 0;
+	}
+}
 
 
-/*
+//Método que comprueba si un descriptor está libre. Si lo está devuelve el número del descriptor libre.
+//Si no lo está devuelve -1.
+int descriptor_libre(){
+	int esta_Libre;
+	int i = 0;
+	
+	do{
+		if(p_proc_actual->descriptores[i]==-1) esta_Libre = i;
+		else {
+			esta_Libre = -1;
+			printk("No tiene descriptores libres");
+		}
+		i++;
+	}while(i<NUM_MUT_PROC);
+	
+	return esta_Libre;
+}
+
+
+
+int mismo_nombre(char *nombre_mutex){
+	for(int i =0;i<mutex_creados;i++){
+		if(array_mutex[i].abierto !=0){
+			if((strcmp(nombre_mutex, array_mutex[i].nombre)) == 0) {
+				printk("Este nombre de mutex ya está en uso.");
+				return -1; 
+			}
+			prink("No hay ningún mutex con este nombre.");
+		}
+	}
+	return 0;
+}
+
+
+int crear_mutex(char*nombre_mutex, int tipo_mutex){
+	boolean numMaxMutex = false;
+	
+	int aux = caracter_max(nombre_mutex);
+	if(aux == -1){
+		printk("El nombre se excede de los parámetros establecidos.");
+		return -1;
+	}
+	
+	printk("Se crea un mutex\n");
+	nombre_mutex=(char *)leer_registro(1);
+	tipo_mutex=(int)leer_registro(2);
+	
+	//Comprobaciones para saber si el mutex se puede crear con normalidad.
+	
+	//Nombre del mutex.
+	if(num_mutex_creados>=1){
+		int aux2 = mismo_nombre(nombre_mutex);
+		if(aux2==-1)return -1;
+	}
+	
+	//Limite de mutex.
+	int descriptor_del_proceso = descriptor_libre();
+	if(descriptor_del_proceso == -1)return -1;
+	
+	if(num_mutex_creados == NUM_MUT) numMaxMutex = true;
+	
+	while(numMaxMutex){
+		printk("Numero máximo de mutex alcanzado. Se procederá a bloquear el proceso.");
+		int nivel = fijar_nivel_int(NIVEL_3);
+		
+		/*Se bloquea igual que el ejercicio de dormir.*/
+		/*Pone al proceso actual en estado bloqueado.*/
+		p_proc_actual->estado=BLOQUEADO;
+		//Puntero que apunta al BCP, se llamará proceso dormido y con valor el proceso actual.
+		BCP* p_proc_dormido = p_proc_actual;
+
+
+		//ELIMINAR PROCESO DE LA LISTA DE LISTOS E INTRODUCIRLO EN LA LISTA DE BLOQUEADOS.
+
+		/*Al estar bloqueado ya no está listo, por lo tanto se le expulsa de dicha lista, lo guarda en la de bloqueados.*/
+		/*El BCP dispone del puntero siguiente, que permite que se crean listas, en nuestro caso solo tenemos la lista de listos
+		que agrupa los procesos listos para ejecutar. (El que se ejecuta actualmente también está en esta lista.)*/
+		eliminar_primero(&lista_listos);
+		/*Se pone en la lista de dormidos el proceso actual que se ha pasado a estado bloqueado.*/
+		insertar_ultimo(&lista_dormir, p_proc_dormido);
+		//Tanto eliminar_primero e insertar_ultimo son funciones de esta misma clase.
+
+
+		//COGER UN NUEVO PROCESO Y HACER CAMBIO DE CONTEXTO.
+
+		/*Función ya perteneciente a esta clase. Mientras que haya un proceso listo, lo devuelve. (Siempre devuelve el primero de la lista)*/
+		p_proc_actual= planificador();
+		/*Al hacer un cambio de proceso en ejecución se debe hacer un cambio de contexto:*/
+		printk("Se hace un cambio de contexto del proceso: %d al proceso: %d \n", p_proc_dormido->id,p_proc_actual->id);
+		/*cambio_contexto(contexto_t*contexto_a_salvar,contexto_t*contexto_a_restaurar)
+			esta función consiste en copiar el estado actual de los registros del procesador en el primer parámetro.
+			El siguiente parámetro hace la función inversa.
+
+		*/
+		cambio_contexto(&(p_proc_dormido->contexto_regs),&(p_proc_actual->contexto_regs));
+		/*Volver al nivel de interrupción anterior.*/
+		fijar_nivel_int(nivel);
+		if(num_mutex_creados != NUM_MUT) numMaxMutex = false;
+	}
+	
+	
+	
+	
+	
+	
+	/*
  * Tratamiento de llamada al sistema crear_proceso. Llama a la
  * funcion auxiliar crear_tarea sis_terminar_proceso
  */
  
+	
+	
+}
 int sis_crear_proceso(){
 	char *prog;
 	int res;
