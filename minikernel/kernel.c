@@ -33,6 +33,43 @@
 /*
  * Función que inicia la tabla de procesos
  */
+
+
+
+
+
+/*FUNCIONES AUXILIARES
+descriptor_libre()   				------> Comprueba si un descriptro está libre.
+mismo_nombre(char *nombre_mutex) 	------> Comprueba si hay algún mutex con el mismo nombre.
+
+
+
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 static void iniciar_tabla_proc(){
 	int i;
 
@@ -433,7 +470,7 @@ int descriptor_libre(){
 }
 
 
-
+//Esta función sirve para que cuando se crea un mutex nuevo no pueda tener el mismo nombre que alguno ya creado.
 int mismo_nombre(char *nombre_mutex){
 	for(int i =0;i<mutex_creados;i++){
 		if(array_mutex[i].abierto !=0){
@@ -448,8 +485,27 @@ int mismo_nombre(char *nombre_mutex){
 }
 
 
+//Encuentra un descriptor que esté libre
+int asignar_descriptor_mutex(){
+	int descriptor_encontrado = -1;
+	int i=0;
+	
+	do{
+		if(array_mutex[i].abierto==0){
+			descriptor_encontrado = i;
+		}
+		i++;
+	}while((descriptor_encontrado==-1)&&(i<NUM_MUT));
+	
+	return descriptor_encontrado;
+}
+
+
 int crear_mutex(char*nombre_mutex, int tipo_mutex){
-	boolean numMaxMutex = false;
+	
+	//COMPROBAMOS PRIMERO SI PODEMOS CREAR EL MUTEX.
+	
+	int numMaxMutex = 0;
 	
 	int aux = caracter_max(nombre_mutex);
 	if(aux == -1){
@@ -469,11 +525,11 @@ int crear_mutex(char*nombre_mutex, int tipo_mutex){
 		if(aux2==-1)return -1;
 	}
 	
-	//Limite de mutex.
-	int descriptor_del_proceso = descriptor_libre();
-	if(descriptor_del_proceso == -1)return -1;
+	//Comprobamos si hay descriptores libres.
+	int descriptor_P = descriptor_libre();
+	if(descriptor_P == -1)return -1;
 	
-	if(num_mutex_creados == NUM_MUT) numMaxMutex = true;
+	if(num_mutex_creados == NUM_MUT) numMaxMutex = 1;
 	
 	while(numMaxMutex){
 		printk("Numero máximo de mutex alcanzado. Se procederá a bloquear el proceso.");
@@ -511,22 +567,94 @@ int crear_mutex(char*nombre_mutex, int tipo_mutex){
 		cambio_contexto(&(p_proc_dormido->contexto_regs),&(p_proc_actual->contexto_regs));
 		/*Volver al nivel de interrupción anterior.*/
 		fijar_nivel_int(nivel);
-		if(num_mutex_creados != NUM_MUT) numMaxMutex = false;
+		if(num_mutex_creados != NUM_MUT) numMaxMutex = 0;
+	}
+	
+	//PODEMOS CREAR EL MUTEX.
+	num_mutex_creados++;
+	
+	//Podemos crear ya nuestro mutex, pero antes debemos de asignarle un descriptor libre. Lo guardamos en una variable.
+	int descriptorM = asignar_descriptor_mutex();
+	//Y lo asignamos al mutex que lo vaya a usar.
+	p_proc_actual->descriptores[descriptor_P] = descriptorM;
+	printk("Asignados descriptor del proceso y del mutex: Descriptor proceso: %d. Descriptor mutex: %d",descriptor_P,descriptor_M);
+	
+	//ACTUALIZAMOS VARIABLES DEL PROCESO (ESTRUCTURA BCP)
+	
+	//Solo necesitamos actualizar el número de descriptores que hay en nuestro proceso.
+	//La variable num_descriptores es nueva, se declara en KERNEL.H
+	p_proc_actual ->num_descriptores++;
+	
+	//ACTUALIZAMOS VARIABLES DEL MUTEX (ESTRUCTURA MUTEX)
+	
+	//Le asignamos el nombre que pasamos por parámetro en la función crear mutex. (esta funcion)
+	array_mutex[descriptor_M].nombre_mutex = nombre_mutex;	
+	//Le asignamos el tipo que también pasamos por parámetro.
+	array_mutex[descriptor_M].tipo_mutex = tipo_mutex;
+	//Le asignamos el valor de 1 para saber que se está usando.
+	array_mutex[descriptor_M].abierto =1;
+	printk("Un nuevo mutex se ha creado. Número de mutex actualmente en funcionamiento: %d\n",num_mutex_creados);
+	return descriptor_P;
+	
+}
+
+//Compara el nombre del mutex con uno que ya esté declarado en el array de mutex y devuelve su descriptor
+
+int descriptor_mutex(char*nombre_mutex){
+	int nuevo_descriptor_mutex;
+	for(int i = 0; i<num_mutex_creados;i++){
+		if(strcmp(array_mutex[i].nombre_mutex,nombre_mutex)==0){
+			nuevo_descriptor_mutex = i;
+		}
+	}
+	return nuevo_descriptor_mutex;
+}
+int abrir_mutex(char*nombre_mutex){
+	
+	
+	int aux = caracter_max(nombre_mutex);
+	if(aux == -1){
+		printk("El nombre se excede de los parámetros establecidos.");
+		return -1;
 	}
 	
 	
+	nombre_mutex=(char *)leer_registro(1);
 	
 	
+	//Comprobaciones para saber si el mutex se puede crear con normalidad.
 	
+	//Nombre del mutex.
+	if(num_mutex_creados>=1){
+		int aux2 = mismo_nombre(nombre_mutex);
+		if(aux2==-1)return -1;
+	}
 	
+	//Comprobamos si hay descriptores libres.
+	int descriptor_P = descriptor_libre();
+	if(descriptor_P == -1)return -1;
+	
+	int nuevo_descriptor_mutex;
+	//Hemos creado una función nueva para esta instrucción. Está mas arriba, descriptor_mutex()
+	nuevo_descriptor_mutex = descriptor_mutex(nombre_mutex);
+	
+	printk("El mutex se abre correctamente\n");
+	
+	p_proc_actual->descriptores[descriptor_P] = descriptorM;
+	printk("Asignados descriptor del proceso y del mutex: Descriptor proceso: %d. Descriptor mutex: %d",descriptor_P,descriptor_M);
+	
+	//Solo necesitamos actualizar el número de descriptores que hay en nuestro proceso.
+	p_proc_actual ->num_descriptores++;
+	//Le asignamos el valor de 1 para saber que se está usando.
+	array_mutex[descriptor_M].abierto =1;
+	return descriptor_P;
+	
+
+}
 	/*
  * Tratamiento de llamada al sistema crear_proceso. Llama a la
  * funcion auxiliar crear_tarea sis_terminar_proceso
  */
- 
-	
-	
-}
 int sis_crear_proceso(){
 	char *prog;
 	int res;

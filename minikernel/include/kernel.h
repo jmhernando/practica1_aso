@@ -37,6 +37,7 @@ typedef struct BCP_t {
         void * pila;			/* dir. inicial de la pila */
 		int tiempo_dormido; //Tiempo que debe permanecer dormido el proceso del ejercicio 1.   							VARIABLE NUEVA.
 		int descriptores[NUM_MUT_PROC];	//Array de descriptores
+		int num_descriptores;		//Numero de descriptores del proceso.											NUEVA
 		BCPptr siguiente;		/* puntero a otro BCP */
 		void *info_mem;			/* descriptor del mapa de memoria */
 } BCP;
@@ -54,6 +55,16 @@ typedef struct{
 	BCP *ultimo;
 } lista_BCPs;
 
+typedef struct{
+	//Las necesitamos para crear mutex.Las necesitamos para cerrar.
+	char* nombre_mutex;
+	int tipo_mutex;
+	int abierto;
+	
+
+	
+	
+}mutex
 
 
 																	//Nuevo array de mutex
