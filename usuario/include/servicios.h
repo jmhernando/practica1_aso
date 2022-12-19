@@ -32,5 +32,11 @@ int escribir(char *texto, unsigned int longi);
 int obtener_id_pr();					//NUEVO
 int dormir(unsigned int segundos);
 
+
+int	crear_mutex(char*nombre_mutex, int tipo_mutex);													//NUEVO
+int abrir_mutex(char*nombre_mutex);																	//NUEVO
+int lock(unsigned mutexid);	
+int unlock (unsigned int mutexid);
+
 #endif /* SERVICIOS_H */
 

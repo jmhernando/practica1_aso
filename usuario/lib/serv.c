@@ -33,7 +33,7 @@ int llamsis(int llamada, int nargs, ... /* args */);
  *
  */
 
-
+/*EJERCICIO 1 DORMIR*/
 int crear_proceso(char *prog){
 	return llamsis(CREAR_PROCESO, 1, (long)prog);
 }
@@ -48,5 +48,19 @@ int obtener_id_pr(){																													//NUEVO
 }
 int dormir(unsigned int segundos){
 	return llamsis(DORMIR, 4, (long) segundos);
+}
+
+/*EJERCICIO 2 MUTEX*/
+int	crear_mutex(char*nombre_mutex, int tipo_mutex){
+	return llamsis(CREAR_MUTEX,5,(long)nombre_mutex,(long)tipo_mutex);
+}
+int abrir_mutex(char*nombre_mutex);{
+	return llamsis(ABRIR_MUTEX,6,(long)nombre_mutex);
+}
+int lock (unsigned int mutexid) {
+	return llamsis(LOCK, 7, (long) mutexid);
+}
+int unlock (unsigned int mutexid) {
+	return llamsis(UNLOCK,8,(long)mutexid);
 }
 

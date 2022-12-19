@@ -55,14 +55,18 @@ typedef struct{
 	BCP *ultimo;
 } lista_BCPs;
 
+#define NO_RECURSIVO 0
+#define RECURSIVO 1
+
 typedef struct{
 	//Las necesitamos para crear mutex.Las necesitamos para cerrar.
 	char* nombre_mutex;
 	int tipo_mutex;
+	int proceso_bloqueante;
 	int abierto;
-	
+	int bloquear;					
 
-	
+	lista_BCPs lista_esperando_bloqueo;
 	
 }mutex
 
@@ -109,6 +113,12 @@ int sis_escribir();
 /*Al crear en kernel.c una nueva rutina, esta se debe declarar en este archivo.*/
 int obtener_id_pr();																				//NUEVO
 int dormir(unsigned int segundos);																	//NUEVO
+
+
+int	crear_mutex(char*nombre_mutex, int tipo_mutex);													//NUEVO
+int abrir_mutex(char*nombre_mutex);																	//NUEVO
+int lock(unsigned mutexid);	
+int unlock (unsigned int mutexid) 																	//NUEVO
 /*
  * Variable global que contiene las rutinas que realizan cada llamada
  */
@@ -116,7 +126,11 @@ servicio tabla_servicios[NSERVICIOS]={	{sis_crear_proceso},
 					{sis_terminar_proceso},
 					{sis_escribir},
 					{obtener_id_pr}, 	//rutina que ofrece el id.									//NUEVO EJERCICIO 1
-					{dormir}																	  //NUEVO EJERCICIO 1
+					{dormir},															  			//NUEVO EJERCICIO 1
+					{crear_mutex},																	//NUEVO EJERCICIO 2
+					{abrir_mutex},																	//NUEVO EJERCICIO 2
+					{lock},
+					{unlock}																		//NUEVO EJERCICIO 2
 					};
 
 #endif /* _KERNEL_H */

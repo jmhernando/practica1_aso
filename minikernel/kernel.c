@@ -649,8 +649,219 @@ int abrir_mutex(char*nombre_mutex){
 	array_mutex[descriptor_M].abierto =1;
 	return descriptor_P;
 	
-
 }
+
+int lock(unsigned int mutexid){
+	char aux == 'S';
+	int aux2;
+	int descriptor_proc = (unsigned int)leer_registro(1);
+	mutexid = p_proc_actual -> descriptores[descriptor_proc];
+	
+	if(mutexid == -1){
+		printk("Error, debe de crearse el mutex antes de bloquearlo");
+		return -1;
+	}
+	
+	printf("Id del mutex: %d.\n Descriptor del proceso: %d\n",mutexid,descriptor_proc);
+	if((array_mutex[mutexid].tipo) == RECURSIVO){
+		aux2 = 0;
+	}
+	else{
+		aux2 = 1;
+	}
+	
+	while(aux=='S'){
+		if(array_mutex[mutexid].bloquear>0){
+			switch(aux2){
+					//Case 0 para cuando es recursivo
+				case 0: 
+					printk("Caso en el que SI es recursivo.");
+					//Cuando el proceso actual bloquea el mutex, añadimos un bloqueo mas al array de mutex.
+					
+					if(array_mutex[mutexid].proceso_bloqueante==p_proc_actual ->id){
+						printk("Se bloquea el mutex al ser un proceso recursivo.");
+						//Como el proceso actual es el que bloquea el mutex, se bloquea sin necesidad de bloquear también el proceso.					
+						array_mutex[mutexid].bloquear++;
+						//Cuando aux toma el valor de N significa que no vamos a volver a iterar en el bucle while.
+						aux == 'N';
+					}
+					
+					//Si es otro proceso el que intenta bloquear el mutex...
+					else{
+						int nivel = fijar_nivel_int(NIVEL_3);
+						printk("Id del proceso: %d. Se va a bloquear\n", p_proc_actual->id);
+
+						/*Pone al proceso actual en estado bloqueado.*/
+						p_proc_actual->estado=BLOQUEADO;
+						//Puntero que apunta al BCP, se llamará proceso bloqueado y con valor el proceso actual.
+						BCP* p_proc_bloqueado = p_proc_actual;
+
+
+						//ELIMINAR PROCESO DE LA LISTA DE LISTOS E INTRODUCIRLO EN LA LISTA DE BLOQUEADOS.
+
+						/*Al estar bloqueado ya no está listo, por lo tanto se le expulsa de dicha lista, lo guarda en la de bloqueados.*/
+						/*El BCP dispone del puntero siguiente, que permite que se crean listas, en nuestro caso solo tenemos la lista de listos
+						que agrupa los procesos listos para ejecutar. (El que se ejecuta actualmente también está en esta lista.)*/
+						eliminar_primero(&lista_listos);
+						/*Se pone en la lista de dormidos el proceso actual que se ha pasado a estado bloqueado.*/
+						insertar_ultimo(&(array_mutex[mutexid].lista_esperando_bloqueo), p_proc_actual);
+						//Tanto eliminar_primero e insertar_ultimo son funciones de esta misma clase.
+
+
+						//COGER UN NUEVO PROCESO Y HACER CAMBIO DE CONTEXTO.
+
+						/*Función ya perteneciente a esta clase. Mientras que haya un proceso listo, lo devuelve. (Siempre devuelve el primero de la lista)*/
+						p_proc_actual= planificador();
+						/*Al hacer un cambio de proceso en ejecución se debe hacer un cambio de contexto:*/
+						printk("Se hace un cambio de contexto del proceso: %d al proceso: %d \n", p_proc_bloqueado->id,p_proc_actual->id);
+						/*cambio_contexto(contexto_t*contexto_a_salvar,contexto_t*contexto_a_restaurar)
+							esta función consiste en copiar el estado actual de los registros del procesador en el primer parámetro.
+							El siguiente parámetro hace la función inversa.
+
+						*/
+						cambio_contexto(&(p_proc_bloqueado->contexto_regs),&(p_proc_actual->contexto_regs));
+						/*Volver al nivel de interrupción anterior.*/
+						fijar_nivel_int(nivel);
+					}
+					break;
+					//Caso 1 para cuando no es recursivo, significa que no se puede volver a bloquear el mutex.
+				case 1: 
+					printk("Caso en el que NO es recursivo.");
+					if(array_mutex[mutexid].proceso_bloqueante==p_proc_actual ->id){
+						//Como no es recursivo, si ya ha sido bloqueado no puede volver a serlo.
+						//Por lo tanto mensaje de error y devuelve -1;
+						printk("Error al intentar bloquear un mutex ya bloqueado (Y NO RECURSIVO)");
+						return -1:
+					}
+					else{
+						
+					//Como la función de este else es la misma que el anterior, el código es el mismo.
+						int nivel = fijar_nivel_int(NIVEL_3);
+						printk("Id del proceso: %d. Se va a bloquear\n", p_proc_actual->id);
+
+						/*Pone al proceso actual en estado bloqueado.*/
+						p_proc_actual->estado=BLOQUEADO;
+						//Puntero que apunta al BCP, se llamará proceso bloqueado y con valor el proceso actual.
+						BCP* p_proc_bloqueado = p_proc_actual;
+
+
+						//ELIMINAR PROCESO DE LA LISTA DE LISTOS E INTRODUCIRLO EN LA LISTA DE BLOQUEADOS.
+
+						/*Al estar bloqueado ya no está listo, por lo tanto se le expulsa de dicha lista, lo guarda en la de bloqueados.*/
+						/*El BCP dispone del puntero siguiente, que permite que se crean listas, en nuestro caso solo tenemos la lista de listos
+						que agrupa los procesos listos para ejecutar. (El que se ejecuta actualmente también está en esta lista.)*/
+						eliminar_primero(&lista_listos);
+						/*Se pone en la lista de dormidos el proceso actual que se ha pasado a estado bloqueado.*/
+						insertar_ultimo(&(array_mutex[mutexid].lista_esperando_bloqueo), p_proc_actual);
+						//Tanto eliminar_primero e insertar_ultimo son funciones de esta misma clase.
+
+
+						//COGER UN NUEVO PROCESO Y HACER CAMBIO DE CONTEXTO.
+
+						/*Función ya perteneciente a esta clase. Mientras que haya un proceso listo, lo devuelve. (Siempre devuelve el primero de la lista)*/
+						p_proc_actual= planificador();
+						/*Al hacer un cambio de proceso en ejecución se debe hacer un cambio de contexto:*/
+						printk("Se hace un cambio de contexto del proceso: %d al proceso: %d \n", p_proc_bloqueado->id,p_proc_actual->id);
+						/*cambio_contexto(contexto_t*contexto_a_salvar,contexto_t*contexto_a_restaurar)
+							esta función consiste en copiar el estado actual de los registros del procesador en el primer parámetro.
+							El siguiente parámetro hace la función inversa.
+
+						*/
+						cambio_contexto(&(p_proc_bloqueado->contexto_regs),&(p_proc_actual->contexto_regs));
+						/*Volver al nivel de interrupción anterior.*/
+						fijar_nivel_int(nivel);
+					}
+					break;
+					
+			}
+		}
+		else{
+			aux == 'N';
+			array_mutex[mutexid].bloquear++;
+		}
+	}
+	array_mutex[mutexid].proceso_bloqueante = p_proc_actual->id;
+	printk("El bloqueo se ha resuelto exitosamente.\n");
+	//El return 0 es cuando una función funciona sin errores.
+	return 0;
+}
+int unlock (unsigned int mutexid) {
+	char aux == 'S';
+	int aux2;
+	int descriptor_proc = (unsigned int)leer_registro(1);
+	mutexid = p_proc_actual -> descriptores[descriptor_proc];
+	
+	if(mutexid == -1){
+		printk("Error, debe de crearse el mutex antes de bloquearlo");
+		return -1;
+	}
+	if((array_mutex[mutexid].tipo) == RECURSIVO){
+		aux2 = 0;
+	}
+	else{
+		aux2 = 1;
+	}
+	if(array_mutex[mutexid].bloquear>0){
+		switch(aux2){
+					//Case 0 para cuando es recursivo
+				case 0: 
+					if(array_mutex[mutexid].proceso_bloqueante==p_proc_actual ->id){
+						printk("Es el proceso actual quien libera el mutex.");
+						//Como el proceso actual es el que bloquea el mutex, se bloquea sin necesidad de bloquear también el proceso.					
+						array_mutex[mutexid].bloquear--;
+						if(array_mutex[mutexid].bloqueado == 0){
+							//Si hay mas procesos que esperan bloqueo en la lista, también se deben desbloquear.
+							if(((array_mutex[mutexid].lista_esperando_bloqueo).primero) != NULL){
+								int nivel = fijar_nivel_int(NIVEL_3);
+								BCP* proceso_esperando_mutex = (array_mutex[mutexid].lista_esperando_bloqueo).primero;
+								proceso_esperando_mutex->estado = LISTO;
+								eliminar_primero(&(array_mutex[mutexid].lista_esperando_bloqueo));
+								insertar_ultimo(&lista_listos,proceso_esperando_mutex);
+								fijar_nivel_int(nivel);
+								printk("Hemos desbloqueado el proceso con id: %d\n", proc_esperando_bloqueo->id);
+							}
+							array_mutex[mutexid].proceso_bloqueante = -1;
+						}
+					}
+					else{
+						printk("Este proceso no tiene bloqueado ningún mutex.");
+						return -1;
+					}
+				break;
+				
+			case 1:
+				if(array_mutex[mutexid].proceso_bloqueante==p_proc_actual ->id){
+						printk("Es el proceso actual quien libera el mutex.");
+						//Como el proceso actual es el que bloquea el mutex, se bloquea sin necesidad de bloquear también el proceso.					
+						array_mutex[mutexid].bloquear--;
+						array_mutex[mutexid].proceso_bloqueante = -1;
+							//Si hay mas procesos que esperan bloqueo en la lista, también se deben desbloquear.
+						if(((array_mutex[mutexid].lista_esperando_bloqueo).primero) != NULL){
+							int nivel = fijar_nivel_int(NIVEL_3);
+							BCP* proceso_esperando_mutex = (array_mutex[mutexid].lista_esperando_bloqueo).primero;
+							proceso_esperando_mutex->estado = LISTO;
+							eliminar_primero(&(array_mutex[mutexid].lista_esperando_bloqueo));
+							insertar_ultimo(&lista_listos,proceso_esperando_mutex);
+							fijar_nivel_int(nivel);
+							printk("Hemos desbloqueado el proceso con id: %d\n", proc_esperando_bloqueo->id);
+						}
+					}
+				else{
+					printk("Este proceso no tiene bloqueado ningún mutex.");
+					return -1;
+				}
+				break;
+		}
+	}
+	else{
+		printk("Este proceso no tiene bloqueado ningún mutex.");
+		return -1;
+	}
+	printk("Se ha realizado el desbloqueo.\n");
+	return 0;
+	
+}
+
 	/*
  * Tratamiento de llamada al sistema crear_proceso. Llama a la
  * funcion auxiliar crear_tarea sis_terminar_proceso
