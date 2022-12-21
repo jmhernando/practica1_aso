@@ -21,7 +21,7 @@
  */
 
 #include "kernel.h"	/* Contiene defs. usadas por este modulo */
-#include <string.h>	//Para usar cadenas de caracteres
+#include <string.h>//Para usar cadenas de caracteres
 //Esto es un cambio
 /*
  *
@@ -29,42 +29,6 @@
  *	iniciar_tabla_proc buscar_BCP_libre
  *
  */
-
-/*
- * Función que inicia la tabla de procesos
- */
-
-
-
-
-
-/*FUNCIONES AUXILIARES
-descriptor_libre()   				------> Comprueba si un descriptro está libre.
-mismo_nombre(char *nombre_mutex) 	------> Comprueba si hay algún mutex con el mismo nombre.
-
-
-
-
-
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -348,9 +312,14 @@ static int crear_tarea(char *prog){
 			&(p_proc->contexto_regs));
 		p_proc->id=proc;
 		p_proc->estado=LISTO;
-
+		//Rellenamos el vector descriptores con -1
+		for(int i=0; i<NUM_MUT_PROC; i++){
+			p_proc->descriptores[i] = -1;
+		}
+		int nivel = fijar_nivel_int(NIVEL_3);
 		/* lo inserta al final de cola de listos */
 		insertar_ultimo(&lista_listos, p_proc);
+		fijar_nivel_int(nivel);
 		error= 0;
 	}
 	else
@@ -434,7 +403,7 @@ int dormir(unsigned int segundos){
 }
 
 /*EMPEZAMOS EJERCICIO MUTEX*/
-int caracter_max(char *nombre_Mut){
+/*int caracter_max(char *nombre_Mut){
 	
 	//strlen cuenta los caracteres pasados como parametro
 	int nCaracteres = strlen(nombre_Mut);
@@ -448,37 +417,55 @@ int caracter_max(char *nombre_Mut){
 		printk("El nombre tiene la longitud correcta.\n");
 		return 0;
 	}
+}*/
+
+int nombre_max(char *nombre) {
+	printk("nombre: %s\n", nombre);
+	
+	int long_nom = strlen(nombre);
+	printk("hola");
+	if (long_nom > MAX_NOM_MUT) {
+		printk("El nombre del mutex es demasiado largo\n");
+		return -1;
+	}
+	else {
+		
+		return 0;
+	}
 }
 
 
 //Método que comprueba si un descriptor está libre. Si lo está devuelve el número del descriptor libre.
 //Si no lo está devuelve -1.
 int descriptor_libre(){
-	int esta_Libre;
+	int aux = -1;
 	int i = 0;
-	
-	do{
-		if(p_proc_actual->descriptores[i]==-1) esta_Libre = i;
-		else {
-			esta_Libre = -1;
-			printk("No tiene descriptores libres");
+
+	while((aux == -1) && (i <= NUM_MUT_PROC)) {
+		
+		//Si descriptor = -1, no ha sido utilizado
+		int x = p_proc_actual->descriptores[i];
+		if(p_proc_actual->descriptores[i] == -1) {
+			
+			aux = i;
 		}
+		
 		i++;
-	}while(i<NUM_MUT_PROC);
-	
-	return esta_Libre;
+	}
+
+	return aux;	
 }
 
 
 //Esta función sirve para que cuando se crea un mutex nuevo no pueda tener el mismo nombre que alguno ya creado.
 int mismo_nombre(char *nombre_mutex){
-	for(int i =0;i<mutex_creados;i++){
+	for(int i =0;i<num_mutex_creados;i++){
 		if(array_mutex[i].abierto !=0){
-			if((strcmp(nombre_mutex, array_mutex[i].nombre)) == 0) {
-				printk("Este nombre de mutex ya está en uso.");
+			if((strcmp(nombre_mutex, array_mutex[i].nombre_mutex)) == 0) {
+				printk("Este nombre de mutex ya está en uso.\n");
 				return -1; 
 			}
-			prink("No hay ningún mutex con este nombre.");
+			printk("No hay ningún mutex con este nombre.\n");
 		}
 	}
 	return 0;
@@ -503,36 +490,40 @@ int asignar_descriptor_mutex(){
 
 int crear_mutex(char*nombre_mutex, int tipo_mutex){
 	
+	nombre_mutex=(char *)leer_registro(1);
+	tipo_mutex=(int)leer_registro(2);
 	//COMPROBAMOS PRIMERO SI PODEMOS CREAR EL MUTEX.
 	
 	int numMaxMutex = 0;
 	
-	int aux = caracter_max(nombre_mutex);
+	int aux = nombre_max(nombre_mutex);
 	if(aux == -1){
 		printk("El nombre se excede de los parámetros establecidos.");
 		return -1;
 	}
 	
 	printk("Se crea un mutex\n");
-	nombre_mutex=(char *)leer_registro(1);
-	tipo_mutex=(int)leer_registro(2);
+	
 	
 	//Comprobaciones para saber si el mutex se puede crear con normalidad.
 	
 	//Nombre del mutex.
 	if(num_mutex_creados>=1){
 		int aux2 = mismo_nombre(nombre_mutex);
+		
 		if(aux2==-1)return -1;
 	}
 	
 	//Comprobamos si hay descriptores libres.
 	int descriptor_P = descriptor_libre();
+	printk("descriptor: %d ", descriptor_P);
 	if(descriptor_P == -1)return -1;
+	printk("-------------------------------------------------------\n");
 	
 	if(num_mutex_creados == NUM_MUT) numMaxMutex = 1;
 	
 	while(numMaxMutex){
-		printk("Numero máximo de mutex alcanzado. Se procederá a bloquear el proceso.");
+		printk("Numero máximo de mutex alcanzado. Se procederá a bloquear el proceso.\n");
 		int nivel = fijar_nivel_int(NIVEL_3);
 		
 		/*Se bloquea igual que el ejercicio de dormir.*/
@@ -549,7 +540,7 @@ int crear_mutex(char*nombre_mutex, int tipo_mutex){
 		que agrupa los procesos listos para ejecutar. (El que se ejecuta actualmente también está en esta lista.)*/
 		eliminar_primero(&lista_listos);
 		/*Se pone en la lista de dormidos el proceso actual que se ha pasado a estado bloqueado.*/
-		insertar_ultimo(&lista_dormir, p_proc_dormido);
+		insertar_ultimo(&lista_mutex_bloqueados, p_proc_actual);
 		//Tanto eliminar_primero e insertar_ultimo son funciones de esta misma clase.
 
 
@@ -572,12 +563,12 @@ int crear_mutex(char*nombre_mutex, int tipo_mutex){
 	
 	//PODEMOS CREAR EL MUTEX.
 	num_mutex_creados++;
-	
+	printk("-------------------------------------------------------\n");
 	//Podemos crear ya nuestro mutex, pero antes debemos de asignarle un descriptor libre. Lo guardamos en una variable.
 	int descriptorM = asignar_descriptor_mutex();
 	//Y lo asignamos al mutex que lo vaya a usar.
 	p_proc_actual->descriptores[descriptor_P] = descriptorM;
-	printk("Asignados descriptor del proceso y del mutex: Descriptor proceso: %d. Descriptor mutex: %d",descriptor_P,descriptor_M);
+	printk("Asignados descriptor del proceso y del mutex: Descriptor proceso: %d. Descriptor mutex: %d",descriptor_P,descriptorM);
 	
 	//ACTUALIZAMOS VARIABLES DEL PROCESO (ESTRUCTURA BCP)
 	
@@ -588,11 +579,11 @@ int crear_mutex(char*nombre_mutex, int tipo_mutex){
 	//ACTUALIZAMOS VARIABLES DEL MUTEX (ESTRUCTURA MUTEX)
 	
 	//Le asignamos el nombre que pasamos por parámetro en la función crear mutex. (esta funcion)
-	array_mutex[descriptor_M].nombre_mutex = nombre_mutex;	
+	array_mutex[descriptorM].nombre_mutex = nombre_mutex;	
 	//Le asignamos el tipo que también pasamos por parámetro.
-	array_mutex[descriptor_M].tipo_mutex = tipo_mutex;
+	array_mutex[descriptorM].tipo_mutex = tipo_mutex;
 	//Le asignamos el valor de 1 para saber que se está usando.
-	array_mutex[descriptor_M].abierto =1;
+	array_mutex[descriptorM].abierto =1;
 	printk("Un nuevo mutex se ha creado. Número de mutex actualmente en funcionamiento: %d\n",num_mutex_creados);
 	return descriptor_P;
 	
@@ -610,16 +601,17 @@ int descriptor_mutex(char*nombre_mutex){
 	return nuevo_descriptor_mutex;
 }
 int abrir_mutex(char*nombre_mutex){
+	nombre_mutex=(char *)leer_registro(1);
 	
-	
-	int aux = caracter_max(nombre_mutex);
+	int aux = nombre_max(nombre_mutex);
+	printk("hola");
 	if(aux == -1){
 		printk("El nombre se excede de los parámetros establecidos.");
 		return -1;
 	}
 	
 	
-	nombre_mutex=(char *)leer_registro(1);
+	
 	
 	
 	//Comprobaciones para saber si el mutex se puede crear con normalidad.
@@ -637,24 +629,25 @@ int abrir_mutex(char*nombre_mutex){
 	int nuevo_descriptor_mutex;
 	//Hemos creado una función nueva para esta instrucción. Está mas arriba, descriptor_mutex()
 	nuevo_descriptor_mutex = descriptor_mutex(nombre_mutex);
-	
+	int descriptorM = nuevo_descriptor_mutex;
 	printk("El mutex se abre correctamente\n");
 	
 	p_proc_actual->descriptores[descriptor_P] = descriptorM;
-	printk("Asignados descriptor del proceso y del mutex: Descriptor proceso: %d. Descriptor mutex: %d",descriptor_P,descriptor_M);
+	printk("Asignados descriptor del proceso y del mutex: Descriptor proceso: %d. Descriptor mutex: %d",descriptor_P,descriptorM);
 	
 	//Solo necesitamos actualizar el número de descriptores que hay en nuestro proceso.
-	p_proc_actual ->num_descriptores++;
+	p_proc_actual->num_descriptores++;
 	//Le asignamos el valor de 1 para saber que se está usando.
-	array_mutex[descriptor_M].abierto =1;
+	array_mutex[descriptorM].abierto ++;
 	return descriptor_P;
 	
 }
 
 int lock(unsigned int mutexid){
-	char aux == 'S';
-	int aux2;
 	int descriptor_proc = (unsigned int)leer_registro(1);
+	char aux = 'S';
+	int aux2;
+	
 	mutexid = p_proc_actual -> descriptores[descriptor_proc];
 	
 	if(mutexid == -1){
@@ -663,7 +656,7 @@ int lock(unsigned int mutexid){
 	}
 	
 	printf("Id del mutex: %d.\n Descriptor del proceso: %d\n",mutexid,descriptor_proc);
-	if((array_mutex[mutexid].tipo) == RECURSIVO){
+	if((array_mutex[mutexid].tipo_mutex) == RECURSIVO){
 		aux2 = 0;
 	}
 	else{
@@ -683,7 +676,7 @@ int lock(unsigned int mutexid){
 						//Como el proceso actual es el que bloquea el mutex, se bloquea sin necesidad de bloquear también el proceso.					
 						array_mutex[mutexid].bloquear++;
 						//Cuando aux toma el valor de N significa que no vamos a volver a iterar en el bucle while.
-						aux == 'N';
+						aux = 'N';
 					}
 					
 					//Si es otro proceso el que intenta bloquear el mutex...
@@ -731,7 +724,7 @@ int lock(unsigned int mutexid){
 						//Como no es recursivo, si ya ha sido bloqueado no puede volver a serlo.
 						//Por lo tanto mensaje de error y devuelve -1;
 						printk("Error al intentar bloquear un mutex ya bloqueado (Y NO RECURSIVO)");
-						return -1:
+						return -1;
 					}
 					else{
 						
@@ -776,7 +769,7 @@ int lock(unsigned int mutexid){
 			}
 		}
 		else{
-			aux == 'N';
+			aux ='N';
 			array_mutex[mutexid].bloquear++;
 		}
 	}
@@ -786,16 +779,16 @@ int lock(unsigned int mutexid){
 	return 0;
 }
 int unlock (unsigned int mutexid) {
-	char aux == 'S';
+	
 	int aux2;
 	int descriptor_proc = (unsigned int)leer_registro(1);
 	mutexid = p_proc_actual -> descriptores[descriptor_proc];
 	
 	if(mutexid == -1){
-		printk("Error, debe de crearse el mutex antes de bloquearlo");
+		printk("Error, debe de crearse el mutex antes de bloquearlo\n");
 		return -1;
 	}
-	if((array_mutex[mutexid].tipo) == RECURSIVO){
+	if((array_mutex[mutexid].tipo_mutex) == RECURSIVO){
 		aux2 = 0;
 	}
 	else{
@@ -806,10 +799,10 @@ int unlock (unsigned int mutexid) {
 					//Case 0 para cuando es recursivo
 				case 0: 
 					if(array_mutex[mutexid].proceso_bloqueante==p_proc_actual ->id){
-						printk("Es el proceso actual quien libera el mutex.");
+						printk("Es el proceso actual quien libera el mutex.\n");
 						//Como el proceso actual es el que bloquea el mutex, se bloquea sin necesidad de bloquear también el proceso.					
 						array_mutex[mutexid].bloquear--;
-						if(array_mutex[mutexid].bloqueado == 0){
+						if(array_mutex[mutexid].bloquear == 0){
 							//Si hay mas procesos que esperan bloqueo en la lista, también se deben desbloquear.
 							if(((array_mutex[mutexid].lista_esperando_bloqueo).primero) != NULL){
 								int nivel = fijar_nivel_int(NIVEL_3);
@@ -818,20 +811,20 @@ int unlock (unsigned int mutexid) {
 								eliminar_primero(&(array_mutex[mutexid].lista_esperando_bloqueo));
 								insertar_ultimo(&lista_listos,proceso_esperando_mutex);
 								fijar_nivel_int(nivel);
-								printk("Hemos desbloqueado el proceso con id: %d\n", proc_esperando_bloqueo->id);
+								printk("Hemos desbloqueado el proceso con id: %d\n", proceso_esperando_mutex->id);
 							}
 							array_mutex[mutexid].proceso_bloqueante = -1;
 						}
 					}
 					else{
-						printk("Este proceso no tiene bloqueado ningún mutex.");
+						printk("Este proceso no tiene bloqueado ningún mutex.\n");
 						return -1;
 					}
 				break;
 				
 			case 1:
 				if(array_mutex[mutexid].proceso_bloqueante==p_proc_actual ->id){
-						printk("Es el proceso actual quien libera el mutex.");
+						printk("Es el proceso actual quien libera el mutex.\n");
 						//Como el proceso actual es el que bloquea el mutex, se bloquea sin necesidad de bloquear también el proceso.					
 						array_mutex[mutexid].bloquear--;
 						array_mutex[mutexid].proceso_bloqueante = -1;
@@ -843,23 +836,73 @@ int unlock (unsigned int mutexid) {
 							eliminar_primero(&(array_mutex[mutexid].lista_esperando_bloqueo));
 							insertar_ultimo(&lista_listos,proceso_esperando_mutex);
 							fijar_nivel_int(nivel);
-							printk("Hemos desbloqueado el proceso con id: %d\n", proc_esperando_bloqueo->id);
+							printk("Hemos desbloqueado el proceso con id: %d\n", proceso_esperando_mutex->id);
 						}
 					}
 				else{
-					printk("Este proceso no tiene bloqueado ningún mutex.");
+					printk("Este proceso no tiene bloqueado ningún mutex.\n");
 					return -1;
 				}
 				break;
 		}
 	}
 	else{
-		printk("Este proceso no tiene bloqueado ningún mutex.");
+		printk("Este proceso no tiene bloqueado ningún mutex.\n");
 		return -1;
 	}
 	printk("Se ha realizado el desbloqueo.\n");
 	return 0;
 	
+}
+int cerrar_mutex(unsigned int mutexid){
+	printk("Se va a cerrar el mutex\n");
+	unsigned int aux = (unsigned int)leer_registro(1);
+	if(aux<16){
+		mutexid = aux;
+	}
+	int descriptor_mutex = p_proc_actual -> descriptores[mutexid];
+	printk("Descriptor del mutex: %d\n", descriptor_mutex);
+	
+	//Comprobamos si existe un descriptor del mutex. Si no lo hay significa que o no se creo o ya está cerrado.
+	if(array_mutex[descriptor_mutex].nombre_mutex == NULL){
+		printk("El nombre del descriptor no existe.\n");
+		return -1;
+	}
+	//Como no se ha cerrado todavía ponemos entonces el valor de -1 para que se cierre.
+	p_proc_actual->descriptores[mutexid] = -1;
+	p_proc_actual->num_descriptores--;
+	//printk("Después de la operación de cerrar descriptores quedan: %s descriptores \n", num_descriptores);
+	
+	if(array_mutex[descriptor_mutex].proceso_bloqueante == p_proc_actual->id) {
+		printk("Llamamos a la función unlock, puesto que existe un el mutex está bloqueado por el proceso que quiere terminarlo\n");
+		unlock(mutexid);
+	}
+	
+	array_mutex[descriptor_mutex].abierto--;
+	
+	//el mutex se ha cerrado ya, ahora hay que eliminarlo
+	printk("Mutex cerrado, se procede a su eliminación \n");
+	
+	//Como varios procesos pueden abrir un mutex se comprueba que esto no haya sucedido.
+	if(array_mutex[descriptor_mutex].abierto <= 0) {
+		
+		num_mutex_creados--;
+		int aux2 = 1;
+		while(lista_mutex_bloqueados.primero != NULL){
+			
+			int nivel = fijar_nivel_int(NIVEL_3);
+			BCP* proceso_esperando_mutex = lista_mutex_bloqueados.primero;
+			proceso_esperando_mutex->estado = LISTO;
+			eliminar_primero(&lista_mutex_bloqueados);
+			insertar_ultimo(&lista_listos,proceso_esperando_mutex);
+			fijar_nivel_int(nivel);
+			printk("Se ha desbloqueado: %d proceso \n", aux2);
+			aux2++;
+		}
+		
+		
+	}
+	return 0;
 }
 
 	/*
@@ -900,6 +943,18 @@ int sis_terminar_proceso(){
 
 	printk("-> FIN PROCESO %d\n", p_proc_actual->id);
 
+	
+	
+	if (p_proc_actual->num_descriptores > 0) {
+		printk("Cerrar mutex que ha abierto el proceso\n");
+		for(int i = 0; i < NUM_MUT_PROC; i++) {
+			printk("%d\n", i);
+			cerrar_mutex(i);			
+		}
+		printk("se ha terminado de cerrar los mutex\n");
+	}
+	
+	
 	liberar_proceso();
 
         return 0; /* no debería llegar aqui */

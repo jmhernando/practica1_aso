@@ -19,7 +19,7 @@
 #define _LLAMSIS_H
 
 /* Numero de llamadas disponibles */
-#define NSERVICIOS 9																			//NUEVO incrementar el 4 a 5 si se introduce nueva rutina
+#define NSERVICIOS 10																			//NUEVO incrementar el 4 a 5 si se introduce nueva rutina
 
 #define CREAR_PROCESO 0
 #define TERMINAR_PROCESO 1
@@ -28,7 +28,8 @@
 #define DORMIR 4																			//NUEVO
 #define CREAR_MUTEX 5																		//NUEVO															
 #define	ABRIR_MUTEX 6																		//NUEVO
-#define LOCK 7	
+#define LOCK 7																				//NUEVO
 #define UNLOCK 8																			//NUEVO
+#define CERRAR_MUTEX 9																		//NUEVO
 #endif /* _LLAMSIS_H */
 

@@ -21,6 +21,7 @@
 #include "const.h"
 #include "HAL.h"
 #include "llamsis.h"
+#include <string.h>
 
 /*
  *
@@ -36,8 +37,9 @@ typedef struct BCP_t {
         contexto_t contexto_regs;	/* copia de regs. de UCP */
         void * pila;			/* dir. inicial de la pila */
 		int tiempo_dormido; //Tiempo que debe permanecer dormido el proceso del ejercicio 1.   							VARIABLE NUEVA.
+		int num_descriptores;	//Numero de descriptores del proceso.
 		int descriptores[NUM_MUT_PROC];	//Array de descriptores
-		int num_descriptores;		//Numero de descriptores del proceso.											NUEVA
+															
 		BCPptr siguiente;		/* puntero a otro BCP */
 		void *info_mem;			/* descriptor del mapa de memoria */
 } BCP;
@@ -68,17 +70,17 @@ typedef struct{
 
 	lista_BCPs lista_esperando_bloqueo;
 	
-}mutex
+}mutex;
 
 
 																	//Nuevo array de mutex
 mutex array_mutex[NUM_MUT];
-int num_mutex_creados 													//NUEVA VARIABLE usada en crear_mutex
+int num_mutex_creados;												//NUEVA VARIABLE usada en crear_mutex
 /*
  * Variable global que identifica el proceso actual
  */
 
-BCP * p_proc_actual=NULL;
+BCP* p_proc_actual=NULL;
 
 /*
  * Variable global que representa la tabla de procesos
@@ -91,7 +93,10 @@ BCP tabla_procs[MAX_PROC];
  */
 lista_BCPs lista_listos= {NULL, NULL};
 
-lista_BCPs lista_dormir ={NULL,NULL};																					//VARIABLE NUEVA
+lista_BCPs lista_dormir ={NULL,NULL};		
+
+lista_BCPs lista_mutex_bloqueados ={NULL,NULL};	
+//VARIABLE NUEVA
 /*
  *
  * Definición del tipo que corresponde con una entrada en la tabla de
@@ -117,11 +122,13 @@ int dormir(unsigned int segundos);																	//NUEVO
 
 int	crear_mutex(char*nombre_mutex, int tipo_mutex);													//NUEVO
 int abrir_mutex(char*nombre_mutex);																	//NUEVO
-int lock(unsigned mutexid);	
-int unlock (unsigned int mutexid) 																	//NUEVO
+int lock(unsigned int mutexid);	
+int unlock (unsigned int mutexid);																//NUEVO
+int cerrar_mutex (unsigned int mutexid);																//NUEVO
 /*
  * Variable global que contiene las rutinas que realizan cada llamada
  */
+	
 servicio tabla_servicios[NSERVICIOS]={	{sis_crear_proceso},
 					{sis_terminar_proceso},
 					{sis_escribir},
@@ -130,8 +137,9 @@ servicio tabla_servicios[NSERVICIOS]={	{sis_crear_proceso},
 					{crear_mutex},																	//NUEVO EJERCICIO 2
 					{abrir_mutex},																	//NUEVO EJERCICIO 2
 					{lock},
-					{unlock}																		//NUEVO EJERCICIO 2
-					};
+					{unlock},																		//NUEVO EJERCICIO 2
+					{cerrar_mutex}
+					 };
 
 #endif /* _KERNEL_H */
 

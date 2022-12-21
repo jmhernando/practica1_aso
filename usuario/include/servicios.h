@@ -21,7 +21,8 @@
 
 /* Evita el uso del printf de la bilioteca estándar */
 #define printf escribirf
-
+#define NO_RECURSIVO 0
+#define RECURSIVO 1
 /* Funcion de biblioteca */
 int escribirf(const char *formato, ...);
 
@@ -37,6 +38,6 @@ int	crear_mutex(char*nombre_mutex, int tipo_mutex);													//NUEVO
 int abrir_mutex(char*nombre_mutex);																	//NUEVO
 int lock(unsigned mutexid);	
 int unlock (unsigned int mutexid);
-
+int cerrar_mutex(unsigned int mutexid);
 #endif /* SERVICIOS_H */
 

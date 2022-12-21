@@ -12,7 +12,7 @@
  */
 
 #include "servicios.h"
-
+#include <string.h>
 int main(){
 
 	printf("creador1 comienza\n");

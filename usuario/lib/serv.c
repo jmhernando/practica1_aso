@@ -54,7 +54,7 @@ int dormir(unsigned int segundos){
 int	crear_mutex(char*nombre_mutex, int tipo_mutex){
 	return llamsis(CREAR_MUTEX,5,(long)nombre_mutex,(long)tipo_mutex);
 }
-int abrir_mutex(char*nombre_mutex);{
+int abrir_mutex(char*nombre_mutex){
 	return llamsis(ABRIR_MUTEX,6,(long)nombre_mutex);
 }
 int lock (unsigned int mutexid) {
@@ -63,4 +63,6 @@ int lock (unsigned int mutexid) {
 int unlock (unsigned int mutexid) {
 	return llamsis(UNLOCK,8,(long)mutexid);
 }
-
+int cerrar_mutex(unsigned int mutexid){
+	return llamsis(CERRAR_MUTEX,9,(long)mutexid);
+}

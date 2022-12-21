@@ -33,5 +33,7 @@ int main(){
 	}
 
 	printf("lector (%d): termina\n", id);
-	return 0;
+	return 0;/*
+	
+	*/
 }
