@@ -28,7 +28,7 @@ int main(){
 
 	if (crear_mutex("m16", NO_RECURSIVO)<0)
 		printf("error creando m16. NO DEBE SALIR\n");
-
+printf("\n************************************************************************\n");
 	printf("creador4 duerme 1 segundo\n");
 	dormir(1);
 

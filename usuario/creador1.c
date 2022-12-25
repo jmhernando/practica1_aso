@@ -31,7 +31,7 @@ int main(){
 
 	if (crear_mutex("m4", NO_RECURSIVO)<0)
 		printf("error creando m4. NO DEBE SALIR\n");
-
+	printf("\n************************************************************************\n");
 	printf("creador1 duerme 1 segundo\n");
 	dormir(1);
 
