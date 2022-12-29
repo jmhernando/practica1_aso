@@ -43,11 +43,7 @@ int main(){
 	if (lock(desc2)<0)
 		printf("error en lock de mutex. NO DEBE APARECER\n");
 
-	if (crear_proceso("mutex1")<0)
-		printf("Error creando mutex1\n");
-
-	if (crear_proceso("mutex2")<0)
-		printf("Error creando mutex2\n");
+	
 
 	printf("prueba_mutex duerme 1 seg.: ejecutarán los procesos mutex1 y mutex2 que se bloquearán en lock de mutex\n");
 	dormir(1);
