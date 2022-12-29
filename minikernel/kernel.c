@@ -870,7 +870,7 @@ int unlock (unsigned int mutexid) {
 int cerrar_mutex(unsigned int mutexid){
 	printk("Se va a cerrar el mutex\n");
 	unsigned int aux = (unsigned int)leer_registro(1);
-	if(aux<16){
+	if(aux<=15){
 		mutexid = aux;
 	}
 	int descriptor_mutex = p_proc_actual -> descriptores[mutexid];
@@ -886,7 +886,7 @@ int cerrar_mutex(unsigned int mutexid){
 	p_proc_actual->num_descriptores--;
 	//printk("Después de la operación de cerrar descriptores quedan: %s descriptores \n", num_descriptores);
 	
-	if(array_mutex[descriptor_mutex].proceso_bloqueante == p_proc_actual->id) {
+	if(p_proc_actual->id == array_mutex[descriptor_mutex].proceso_bloqueante) {
 		array_mutex[descriptor_mutex].bloquear =0;
 		
 		while((array_mutex[descriptor_mutex].lista_esperando_bloqueo).primero != NULL) {
