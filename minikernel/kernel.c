@@ -677,7 +677,7 @@ int lock(unsigned int mutexid){
 			switch(aux2){
 					//Case 0 para cuando es recursivo
 				case 0: 
-					printk("Caso en el que SI es recursivo.");
+					printk("Caso en el que SI es recursivo.\n");
 					//Cuando el proceso actual bloquea el mutex, añadimos un bloqueo mas al array de mutex.
 					
 					if(array_mutex[mutexid].proceso_bloqueante==p_proc_actual ->id){
